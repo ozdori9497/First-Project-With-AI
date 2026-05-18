@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    // What version of JavaScript to compile our TypeScript into
+    "target": "ES2020",
+
+    // We are using Node.js, so use its module system
+    "module": "commonjs",
+
+    // Where to put the compiled JavaScript files
+    "outDir": "./dist",
+
+    // Where our TypeScript source files are
+    "rootDir": "./src",
+
+    // Strict mode = TypeScript catches more mistakes for us
+    "strict": true,
+
+    // Allows importing .json files directly in TypeScript
+    "resolveJsonModule": true,
+
+    // Makes sure each file is compiled independently (better performance)
+    "isolatedModules": true,
+
+    // Skip type checking on library files (faster compilation)
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*"],  // Only compile files inside the src folder
+  "exclude": ["node_modules"] // Never compile node_modules
+}

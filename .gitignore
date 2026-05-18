@@ -1,0 +1,8 @@
+# Never upload node_modules from any folder
+node_modules/
+
+# Never upload compiled JavaScript
+dist/
+
+# Project guidance file for Claude Code
+CLAUDE.md

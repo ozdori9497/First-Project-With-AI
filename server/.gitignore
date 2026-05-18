@@ -1,0 +1,4 @@
+# Never upload node_modules - it's huge and can be reinstalled with npm install
+node_modules/
+# Never upload compiled JavaScript - it can be rebuilt with npm run build
+dist/
