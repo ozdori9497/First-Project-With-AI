@@ -9,13 +9,33 @@ interface Supermarket {
   address: string;
 }
 
+interface Price {
+  _id: string;
+  productName: string;
+  price: number;
+  category: string;
+  supermarketId: string;
+  updatedAt: string;
+};
+
 // This is our main component - the face of our app
 function App(){
- // Stores the list of supermarkets fetched from the server
+  // Stores the list of supermarkets fetched from the server
   const [supermarkets, setSupermarkets] = useState<Supermarket[]>([]);
+
+  // Stores the list of prices fetched from the server
+  const [prices, setPrices] = useState<Price[]>([]);
 
   // Stores the form input values
   const [form, setForm] = useState({name: '', city: '', address: ''});
+
+  // Stores the price form input values
+  const [priceForm, setPriceForm] = useState({
+    productName: '',
+    price: 0,
+    category: '',
+    supermarketId: ''
+  });
   
   // Runs automatically when the page loads — fetches all supermarkets
   useEffect(() => {
@@ -35,6 +55,17 @@ function App(){
       .then((newSupermarket) => setSupermarkets([...supermarkets, newSupermarket]));
   };
 
+  // Sends a POST request to create a new price
+  const addPrice = () => {
+    fetch('http://localhost:3000/prices', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(priceForm),
+    })
+      .then((res) => res.json())
+      .then((newPrice) => setPrices([...prices, newPrice]));
+  };
+
 
   // return is what gets displayed on the screen
   return (
@@ -47,12 +78,27 @@ function App(){
       <input placeholder="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
       <button onClick={addSupermarket}>Add Supermarket</button>
 
-      {/* List of supermarkets from the database */}
-      {supermarkets.map((s) => (
-        <div key={s._id}>
-          <p>{s.name} - {s.city} - {s.address}</p>        
-        </div>
-      ))}
+      <h2>Add Price</h2>
+      <input placeholder="Product Name" value={priceForm.productName} onChange={(e) => setPriceForm({ ...priceForm, productName: e.target.value })} />
+      <input placeholder="Price" type="number" value={priceForm.price} onChange={(e) => setPriceForm({ ...priceForm, price: Number(e.target.value) })} />
+      <input placeholder="Category (Dairy, Meat...)" value={priceForm.category} onChange={(e) => setPriceForm({ ...priceForm, category: e.target.value })} />
+      
+      {/* Dropdown reuses the supermarkets we already fetched */}
+      <select value={priceForm.supermarketId} onChange={(e) => setPriceForm({ ...priceForm, supermarketId: e.target.value })}>
+        <option value="">Select Supermarket</option>        
+        {/* List of supermarkets from the database */}
+        {supermarkets.map((s) => (
+          <option key={s._id} value={s._id}> {s.name} - {s.city}</option>          
+        ))}
+        </select>
+        <button onClick={addPrice}>Add Price</button>
+
+        <h2>Prices</h2>
+        {prices.map((p) => (
+          <div key={p._id}>
+            <p>{p.productName} - {p.price}₪ - {p.category}</p>
+          </div>
+        ))}      
     </div>
   );
 }
