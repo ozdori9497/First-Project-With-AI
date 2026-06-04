@@ -22,7 +22,10 @@
     "isolatedModules": true,
 
     // Skip type checking on library files (faster compilation)
-    "skipLibCheck": true
+    "skipLibCheck": true,
+
+    // Tell TypeScript we are running in Node.js so it knows built-in modules like zlib, Buffer
+    "types": ["node"]
   },
   "include": ["src/**/*"],  // Only compile files inside the src folder
   "exclude": ["node_modules"] // Never compile node_modules

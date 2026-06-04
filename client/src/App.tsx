@@ -44,6 +44,13 @@ function App(){
       .then((data) => setSupermarkets(data));
   }, []);
 
+  // Runs automatically when the page loads — fetches all prices
+  useEffect(() => {
+    fetch('http://localhost:3000/prices')
+      .then((res) => res.json())
+      .then((data) => setPrices(data));
+  }, []);
+
   // Sends a POST request to create a new supermarket
   const addSupermarket = () => {
     fetch('http://localhost:3000/supermarkets', {
