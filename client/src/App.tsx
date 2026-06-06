@@ -84,44 +84,76 @@ function App(){
 
   // return is what gets displayed on the screen
   return (
-    <div>
-      {/* This shows the message we got from the server */}
-      <h1>Supermarkets</h1>
-      {/* Form to add a new supermarket */}
-      <input placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-      <input placeholder="City" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
-      <input placeholder="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
-      <button onClick={addSupermarket}>Add Supermarket</button>
-
-      <h2>Add Price</h2>
-      <input placeholder="Product Name" value={priceForm.productName} onChange={(e) => setPriceForm({ ...priceForm, productName: e.target.value })} />
-      <input placeholder="Price" type="number" value={priceForm.price} onChange={(e) => setPriceForm({ ...priceForm, price: Number(e.target.value) })} />
-      <input placeholder="Category (Dairy, Meat...)" value={priceForm.category} onChange={(e) => setPriceForm({ ...priceForm, category: e.target.value })} />
+    <div className="min-h-screen bg-gray-100">
       
-      {/* Dropdown reuses the supermarkets we already fetched */}
-      <select value={priceForm.supermarketId} onChange={(e) => setPriceForm({ ...priceForm, supermarketId: e.target.value })}>
-        <option value="">Select Supermarket</option>        
-        {/* List of supermarkets from the database */}
-        {supermarkets.map((s) => (
-          <option key={s._id} value={s._id}> {s.name} - {s.city}</option>          
-        ))}
-        </select>
-        <button onClick={addPrice}>Add Price</button>
+      {/* Header — blue background, white text, centered */}
+      <div className="bg-blue-700 text-white p-6 mb-8">
+        <h1 className="text-3xl font-bold text-center">🛒 Market Price Tracker</h1>
+      </div>
 
-        {/* Dropdown to filter prices by category — empty value means show all */}
-        <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
-          <option value ="">All Categories</option>
-          <option value="General">General</option>
-          <option value="Dairy">Dairy</option>
-          <option value="Meat">Meat</option>
-        </select>
+      {/* Main container — max width 2xl, centered horizontally with mx-auto */}
+      <div className="max-w-2xl mx-auto px-4">
 
-        <h2>Prices</h2>
-        {prices.map((p) => (
-          <div key={p._id}>
-            <p>{p.productName} - {p.price}₪ - {p.category}</p>
+        {/* Card — white box with rounded corners, shadow, and padding */}
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          {/* mb-4 = margin bottom to separate title from inputs */}
+          <h2 className="text-xl font-semibold mb-4">Add Supermarket</h2>
+          {/* flex + gap-2 = puts inputs side by side with space between them */}
+          <div className="flex gap-2 flex-wrap">
+            <input className="border rounded px-3 py-2 flex-1" placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <input className="border rounded px-3 py-2 flex-1" placeholder="City" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+            <input className="border rounded px-3 py-2 flex-1" placeholder="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+            {/* hover:bg-blue-700 = darker blue when mouse hovers over button */}
+            <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" onClick={addSupermarket}>Add</button>
           </div>
-        ))}      
+        </div>
+
+        {/* Card for adding a new price */}
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4">Add Price</h2>
+          <div className="flex gap-2 flex-wrap">
+            <input className="border rounded px-3 py-2 flex-1" placeholder="Product Name" value={priceForm.productName} onChange={(e) => setPriceForm({ ...priceForm, productName: e.target.value })} />
+            {/* w-24 = fixed small width for the price number input */}
+            <input className="border rounded px-3 py-2 w-24" placeholder="Price" type="number" value={priceForm.price} onChange={(e) => setPriceForm({ ...priceForm, price: Number(e.target.value) })} />
+            <input className="border rounded px-3 py-2 flex-1" placeholder="Category" value={priceForm.category} onChange={(e) => setPriceForm({ ...priceForm, category: e.target.value })} />
+            <select className="border rounded px-3 py-2 flex-1" value={priceForm.supermarketId} onChange={(e) => setPriceForm({ ...priceForm, supermarketId: e.target.value })}>
+              <option value="">Select Supermarket</option>
+              {supermarkets.map((s) => (
+                <option key={s._id} value={s._id}>{s.name} - {s.city}</option>
+              ))}
+            </select>
+            {/* Green button for adding prices — different color to distinguish from supermarket button */}
+            <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700" onClick={addPrice}>Add</button>
+          </div>
+        </div>
+
+        {/* Card for prices list + category filter */}
+        <div className="bg-white rounded-lg shadow p-6">
+          {/* justify-between = title on left, dropdown on right */}
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Prices</h2>
+            {/* Category filter dropdown */}
+            <select className="border rounded px-3 py-2" value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
+              <option value="">All Categories</option>
+              <option value="General">General</option>
+              <option value="Dairy">Dairy</option>
+              <option value="Meat">Meat</option>
+            </select>
+          </div>
+          {/* Each price row — border-b = line between rows, py-3 = vertical padding */}
+          {prices.map((p) => (
+            <div key={p._id} className="flex items-center border-b py-3">
+              {/* w-1/2 = takes half the row width so long names don't push other columns */}
+              <span className="font-medium w-1/2">{p.productName}</span>
+              {/* w-1/4 = fixed quarter width so category always stays in same position */}
+              <span className="text-gray-500 text-sm w-1/4">{p.category}</span>
+              {/* text-right = price always aligned to the right */}
+              <span className="text-blue-700 font-bold w-1/4 text-right">{p.price}₪</span>
+            </div>
+          ))}
+        </div>
+
+      </div>
     </div>
   );
 }
