@@ -29,6 +29,9 @@ function App(){
   // Stores the form input values
   const [form, setForm] = useState({name: '', city: '', address: ''});
 
+  // Stores the selected category filter - empty string means "show all"  
+  const [filterCategory, setFilterCategory] = useState('');
+
   // Stores the price form input values
   const [priceForm, setPriceForm] = useState({
     productName: '',
@@ -46,10 +49,15 @@ function App(){
 
   // Runs automatically when the page loads — fetches all prices
   useEffect(() => {
-    fetch('http://localhost:3000/prices')
+    // If a category is selected, add ?=category=... to the URL - otherwise fetch all
+    const url = filterCategory
+      ? `http://localhost:3000/prices?category=${filterCategory}`
+      : 'http://localhost:3000/prices';
+
+      fetch(url)
       .then((res) => res.json())
       .then((data) => setPrices(data));
-  }, []);
+  }, [filterCategory]);
 
   // Sends a POST request to create a new supermarket
   const addSupermarket = () => {
@@ -99,6 +107,14 @@ function App(){
         ))}
         </select>
         <button onClick={addPrice}>Add Price</button>
+
+        {/* Dropdown to filter prices by category — empty value means show all */}
+        <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
+          <option value ="">All Categories</option>
+          <option value="General">General</option>
+          <option value="Dairy">Dairy</option>
+          <option value="Meat">Meat</option>
+        </select>
 
         <h2>Prices</h2>
         {prices.map((p) => (
