@@ -32,6 +32,13 @@ function App(){
   // Stores the selected category filter - empty string means "show all"  
   const [filterCategory, setFilterCategory] = useState('');
 
+  // Tracks which page of prices we are curently on
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Stores total number of products - need to calcualte how many pages exist
+  const [totalPrices, setTotalPrices] = useState(0);
+  
+
   // Stores the price form input values
   const [priceForm, setPriceForm] = useState({
     productName: '',
@@ -47,17 +54,25 @@ function App(){
       .then((data) => setSupermarkets(data));
   }, []);
 
-  // Runs automatically when the page loads — fetches all prices
+  // Reset to page 1 whenever the category filter changes
   useEffect(() => {
-    // If a category is selected, add ?=category=... to the URL - otherwise fetch all
+    setCurrentPage(1);
+  }, [filterCategory]);
+
+  // Re-runs whenever filterCategory or currentPage changes
+  useEffect(() => {
+    // Build URL with page and limit params so server sends only 20 products at a time
     const url = filterCategory
-      ? `http://localhost:3000/prices?category=${filterCategory}`
-      : 'http://localhost:3000/prices';
+      ? `http://localhost:3000/prices?category=${filterCategory}&page=${currentPage}&limit=20`
+      : `http://localhost:3000/prices?page=${currentPage}&limit=20`;
 
       fetch(url)
       .then((res) => res.json())
-      .then((data) => setPrices(data));
-  }, [filterCategory]);
+      .then((data) => {
+        setPrices(data.prices); // server now returns { prices, total } not just an array
+        setTotalPrices(data.total); // save total so we can calculate number of pages
+      });
+  }, [filterCategory, currentPage]);
 
   // Sends a POST request to create a new supermarket
   const addSupermarket = () => {
@@ -151,6 +166,32 @@ function App(){
               <span className="text-blue-700 font-bold w-1/4 text-right">{p.price}₪</span>
             </div>
           ))}
+
+          {/* Pagination buttons — previous and next page */}
+          <div className="flex justify-between items-center mt-4">
+            {/* Disable Previous button when on first page */}
+            <button
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </button>
+
+            {/* Show current page out of total pages — Math.ceil rounds up e.g. 6563/20 = 329 pages */}
+            <span className="text-gray-600">
+              Page {currentPage} of {Math.ceil(totalPrices / 20)}
+            </span>
+
+            {/* Disable Next button when on last page */}
+            <button
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage === Math.ceil(totalPrices / 20)}
+            >
+              Next
+            </button>
+          </div>
         </div>
 
       </div>

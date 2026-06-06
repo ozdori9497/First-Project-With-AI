@@ -7,8 +7,24 @@ const router = express.Router();
 router.get('/', async (req, res) => {
     // If ?category=Dairy is in the URL, filter by it — otherwise return all
     const filter = req.query.category ? {category: req.query.category as string} : {};
-    const prices = await Price.find(filter).populate('supermarketId');
-    res.json(prices);
+
+    // Which page to show - default is page 1
+    const page = parseInt(req.query.page as string) || 1;
+
+    // How many products per page - default is 20
+    const limit = parseInt(req.query.limit as string) || 20;
+
+    // How many products to skip - page 1 skips 0, page 2 skips 20, etc.
+    const skip = (page - 1) * limit;
+
+    // Fetch only the products for this page + total count for React to calculate pages
+    const [prices, total] = await Promise.all([
+        Price.find(filter).populate('supermarketId').skip(skip).limit(limit),
+        Price.countDocuments(filter)
+    ]);
+    
+    // Send prices + total so React knows hot many pages exist    
+    res.json({prices, total, page, limit });
 });
 
 // POST /prices → creates a new price in MongoDB

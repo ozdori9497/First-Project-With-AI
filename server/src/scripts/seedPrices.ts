@@ -53,19 +53,23 @@ async function run() {
     });
     
     const items = parsed.Root.Items[0].Item;
-    console.log(`Found ${items.length} products. Saving first 50...`);
+    console.log(`Found ${items.length} products. Saving all...`);
 
-    // Save first 50 products to MongoDB
-    for (const item of items.slice(0, 50)) {
+    // Clear old prices before seeding - prevents duplicate products
+    await Price.deleteMany({supermarketId: supermarket._id });
+    console.log('Old prices cleared.');
+
+    // Save all products with their real Hebrew category from the XML
+    for (const item of items) {
         await Price.create({
             productName: item.ItemName[0],
             price: parseFloat(item.ItemPrice[0]),
-            category: 'General',
+            category: item.ItemSectionText ? item.ItemSectionText[0] : 'General', // use real category, fall back to General if missing
             supermarketId: supermarket._id,
         });
     }
 
-    console.log('Done! 50 prices saved to MongoDB.');
+    console.log(`Done! ${items.length} prices saved to MongoDB.`);
     await mongoose.disconnect();
 }
 
