@@ -14,7 +14,7 @@ interface Price {
   productName: string;
   price: number;
   category: string;
-  supermarketId: string;
+  supermarketId: {_id: string; name: string };
   updatedAt: string;
 }
 
@@ -30,7 +30,10 @@ function App() {
   const [form, setForm] = useState({ name: "", city: "", address: "" });
 
   // Stores the selected category filter - empty string means "show all"
-  const [filterCategory, setFilterCategory] = useState("");
+  const [filterCategory, setFilterCategory] = useState('');
+
+  // Stores the selected supermarket filter - empty string means "show all"
+  const [filterSupermarket, setFilterSupermarket] = useState('');
 
   // Tracks which page of prices we are curently on
   const [currentPage, setCurrentPage] = useState(1);
@@ -56,22 +59,32 @@ function App() {
   // Reset to page 1 whenever the category filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [filterCategory]);
+  }, [filterCategory, filterSupermarket]);
 
   // Re-runs whenever filterCategory or currentPage changes
   useEffect(() => {
-    // Build URL with page and limit params so server sends only 20 products at a time
-    const url = filterCategory
-      ? `http://localhost:3000/prices?category=${filterCategory}&page=${currentPage}&limit=20`
-      : `http://localhost:3000/prices?page=${currentPage}&limit=20`;
+    // Build url with all active filters
+    const params = new URLSearchParams();
+    params.set('page', String(currentPage));
+    params.set('limit', '20');
+    
+    if (filterCategory) {
+      params.set('category', filterCategory);
+    }
 
+    if (filterSupermarket) {
+      params.set('supermarketId', filterSupermarket);
+    }
+
+    const url = `http://localhost:3000/prices?${params.toString()}`;
+    
     fetch(url)
       .then((res) => res.json())
       .then((data) => {
         setPrices(data.prices); // server now returns { prices, total } not just an array
         setTotalPrices(data.total); // save total so we can calculate number of pages
       });
-  }, [filterCategory, currentPage]);
+  }, [filterCategory, filterSupermarket ,currentPage]);
 
   // Sends a POST request to create a new supermarket
   const addSupermarket = () => {
@@ -135,7 +148,7 @@ function App() {
             />
             {/* hover:bg-blue-700 = darker blue when mouse hovers over button */}
             <button
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 cursor-pointer"
               onClick={addSupermarket}
             >
               Add
@@ -174,7 +187,7 @@ function App() {
               }
             />
             <select
-              className="border rounded px-3 py-2 flex-1"
+              className="border rounded px-3 py-2 flex-1 cursor-pointer"
               value={priceForm.supermarketId}
               onChange={(e) =>
                 setPriceForm({ ...priceForm, supermarketId: e.target.value })
@@ -189,7 +202,7 @@ function App() {
             </select>
             {/* Green button for adding prices — different color to distinguish from supermarket button */}
             <button
-              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 cursor-pointer"
               onClick={addPrice}
             >
               Add
@@ -199,15 +212,18 @@ function App() {
 
         {/* Card for prices list + category filter */}
         <div className="bg-white rounded-lg shadow p-6">
-          {/* justify-between = title on left, dropdown on right */}
-          <div className="flex justify-between items-center mb-4">
+          {/* justify-between = title on left, dropdowns on right */}
+          <div className="flex justify-between items-center mb-4 gap-2">
             <h2 className="text-xl font-semibold">Prices</h2>
+            {/* Supermarket filter — dynamically built from supermarkets we already fetched */}
+            <select className="border rounded px-3 py-2 cursor-pointer" value={filterSupermarket} onChange={(e) => setFilterSupermarket(e.target.value)}>
+              <option value="">כל הסופרים</option>
+              {supermarkets.map((s) => (
+                <option key={s._id} value={s._id}>{s.name}</option>
+              ))}
+            </select>
             {/* Category filter dropdown */}
-            <select
-              className="border rounded px-3 py-2"
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
-            >
+            <select className="border rounded px-3 py-2 cursor-pointer" value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
               <option value="">כל הקטגוריות</option>
               <option value="מוצרי חלב">מוצרי חלב</option>
               <option value="בשר ועוף">בשר ועוף</option>
@@ -225,14 +241,14 @@ function App() {
           {/* Each price row — border-b = line between rows, py-3 = vertical padding */}
           {prices.map((p) => (
             <div key={p._id} className="flex items-center border-b py-3">
-              {/* w-1/2 = takes half the row width so long names don't push other columns */}
-              <span className="font-medium w-1/2">{p.productName}</span>
-              {/* w-1/4 = fixed quarter width so category always stays in same position */}
-              <span className="text-gray-500 text-sm w-1/4">{p.category}</span>
-              {/* text-right = price always aligned to the right */}
-              <span className="text-blue-700 font-bold w-1/4 text-right">
-                {p.price}₪
-              </span>
+              {/* w-2/5 = product name gets more space for long Hebrew names */}
+              <span className="font-medium w-2/5">{p.productName}</span>
+              {/* supermarket name */}
+              <span className="text-green-700 text-sm w-1/5">{p.supermarketId.name}</span>
+              {/* category */}
+              <span className="text-gray-500 text-sm w-1/5">{p.category}</span>
+              {/* price aligned right */}
+              <span className="text-blue-700 font-bold w-1/5 text-right">{p.price}₪</span>
             </div>
           ))}
 
@@ -240,7 +256,7 @@ function App() {
           <div className="flex justify-between items-center mt-4">
             {/* Disable Previous button when on first page */}
             <button
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
               onClick={() => setCurrentPage(currentPage - 1)}
               disabled={currentPage === 1}
             >
@@ -249,12 +265,12 @@ function App() {
 
             {/* Show current page out of total pages — Math.ceil rounds up e.g. 6563/20 = 329 pages */}
             <span className="text-gray-600">
-              Page {currentPage} of {Math.ceil(totalPrices / 20)}
+              Page {currentPage} of {Math.ceil(totalPrices / 20)} ({totalPrices} products)
             </span>
 
             {/* Disable Next button when on last page */}
             <button
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
               onClick={() => setCurrentPage(currentPage + 1)}
               disabled={currentPage === Math.ceil(totalPrices / 20)}
             >

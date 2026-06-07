@@ -5,8 +5,15 @@ const router = express.Router();
 
 // GET /prices → returns all prices, or filter by category (?category=Dairy)
 router.get('/', async (req, res) => {
-    // If ?category=Dairy is in the URL, filter by it — otherwise return all
-    const filter = req.query.category ? {category: req.query.category as string} : {};
+    // Build filter from query params - both category and supermarkertId are optional
+    const filter: any = {};
+    if (req.query.category) {
+        filter.category = req.query.category as string;
+    }
+    
+    if (req.query.supermarketId) {
+        filter.supermarketId = req.query.supermarketId as string;
+    }
 
     // Which page to show - default is page 1
     const page = parseInt(req.query.page as string) || 1;

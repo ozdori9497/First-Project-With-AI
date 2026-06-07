@@ -24,6 +24,9 @@
     // Skip type checking on library files (faster compilation)
     "skipLibCheck": true,
 
+    // Generates .map files so VS Code debugger can link JavaScript back to TypeScript
+    "sourceMap": true,
+
     // Tell TypeScript we are running in Node.js so it knows built-in modules like zlib, Buffer
     "types": ["node"]
   },
