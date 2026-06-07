@@ -4,6 +4,7 @@ import { parseString } from 'xml2js';
 import mongoose from 'mongoose';
 import Supermarket from '../models/Supermarket';
 import Price from '../models/Price';
+import { getCategory } from './getCategory';
 
 // Shufersal's public file listing API
 const FILE_LIST_URL = 'http://prices.shufersal.co.il/FileObject/UpdateCategory?catID=2&storeId=0&page=1';
@@ -64,7 +65,7 @@ async function run() {
         await Price.create({
             productName: item.ItemName[0],
             price: parseFloat(item.ItemPrice[0]),
-            category: item.ItemSectionText ? item.ItemSectionText[0] : 'General', // use real category, fall back to General if missing
+            category: getCategory(item.ItemName[0]), // use real category, fall back to General if missing
             supermarketId: supermarket._id,
         });
     }
